@@ -1,0 +1,82 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}პროფილი{% endblock %}
+
+{% block body %}
+<div class="container">
+    <section class="profile-hero grid-paper">
+        <span class="avatar" aria-hidden="true">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+        <div>
+            <span class="eyebrow">ჩემი პროფილი</span>
+            <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+            <div class="profile-meta">
+                <span>☎ {{ user.phone }}</span>
+                <span>✉ {{ user.email }}</span>
+                <span>წევრი {{ user.date_joined|date:"d.m.Y" }}-დან</span>
+            </div>
+        </div>
+        <a class="btn" href="{% url 'filter' %}">ახალი ჯავშანი</a>
+    </section>
+
+    <div class="stats">
+        <div class="stat"><strong>{{ stats.trips }}</strong><span>ჯავშანი სულ</span></div>
+        <div class="stat"><strong>{{ stats.spent }} ₾</strong><span>გადახდილი</span></div>
+        <div class="stat"><strong>{{ stats.listings }}</strong><span>ჩემი განცხადება</span></div>
+        <div class="stat"><strong>{{ stats.earned }} ₾</strong><span>გამომუშავებული</span></div>
+    </div>
+
+    <nav class="tabs" aria-label="პროფილის განყოფილებები">
+        {% for key, label, count in tabs %}
+            <a class="tab" href="?tab={{ key }}" {% if key == tab %}aria-current="page"{% endif %}>{{ label }} <span class="count">{{ count }}</span></a>
+        {% endfor %}
+    </nav>
+
+    {% if tab == "bookings" or tab == "history" or tab == "incoming" %}
+        <div class="booking-list">
+            {% for rental in page_obj %}
+                {% if tab == "incoming" %}
+                    {% include "portal/partials/booking_row.html" with show_renter=True %}
+                {% else %}
+                    {% include "portal/partials/booking_row.html" %}
+                {% endif %}
+            {% empty %}
+                <div class="empty-state">
+                    {% if tab == "bookings" %}
+                        <p>აქტიური ან მომავალი ჯავშნები არ გაქვთ.</p>
+                        <p><a class="btn" href="{% url 'filter' %}">მოძებნეთ მანქანა</a></p>
+                    {% elif tab == "history" %}
+                        <p>დასრულებული ან გაუქმებული ჯავშნები ჯერ არ არის.</p>
+                    {% else %}
+                        <p>თქვენს მანქანებს ჯერ არავინ დაჯავშნა.</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% include "portal/partials/pagination.html" %}
+        </div>
+    {% elif tab == "favorites" %}
+        <div class="grid">
+            {% for car in page_obj %}
+                {% include "portal/partials/car_card.html" %}
+            {% empty %}
+                <div class="empty-state"><p>მოწონებული მანქანები არ გაქვთ. დააჭირეთ ♡-ს მანქანის გვერდზე.</p></div>
+            {% endfor %}
+        </div>
+        <div style="padding-bottom: 64px;">{% include "portal/partials/pagination.html" %}</div>
+    {% else %}
+        <div class="grid">
+            {% for car in page_obj %}
+                <div>
+                    {% include "portal/partials/car_card.html" %}
+                    <div class="listing-meta"><span>{{ car.bookings_count }} ჯავშანი</span><span>{{ car.earned|default:0 }} ₾ შემოსავალი</span></div>
+                </div>
+            {% empty %}
+                <div class="empty-state">
+                    <p>ჯერ არცერთი მანქანა არ დაგიმატებიათ.</p>
+                    <p><a class="btn" href="{% url 'add_car' %}">განცხადების დამატება</a></p>
+                </div>
+            {% endfor %}
+        </div>
+        <div style="padding-bottom: 64px;">{% include "portal/partials/pagination.html" %}</div>
+    {% endif %}
+</div>
+{% endblock %}

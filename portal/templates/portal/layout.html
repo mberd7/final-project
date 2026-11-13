@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}მანქანების გაქირავება{% endblock %} | {{ site_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;500;600;700&family=Noto+Serif+Georgian:wght@600;700&family=Space+Mono:wght@400;700&display=swap">
+    <link rel="stylesheet" href="{% static 'portal/css/style.css' %}">
+</head>
+<body>
+    <div class="announce">დაჯავშნე ონლაინ · აირჩიე თარიღი კალენდარში · გადაიხადე ბარათით</div>
+
+    <header class="site-header">
+        <div class="container">
+            <nav class="nav" aria-label="მთავარი მენიუ">
+                <a class="logo" href="{% url 'home' %}">{{ site_name }}</a>
+
+                <div class="nav-links">
+                    <a href="{% url 'cars' %}">მანქანები</a>
+                    <a href="{% url 'filter' %}">ძებნა</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'profile' %}" class="hide-sm">პროფილი</a>
+                        <a href="{% url 'notifications' %}" class="bell" aria-label="შეტყობინებები{% if unread_count %} ({{ unread_count }} ახალი){% endif %}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                            {% if unread_count %}<span class="badge">{{ unread_count }}</span>{% endif %}
+                        </a>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="link-button">გამოსვლა</button>
+                        </form>
+                        <a href="{% url 'add_car' %}" class="btn btn-small">დამატება</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-small">ავტორიზაცია</a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        {% if messages %}
+            <div class="container messages">
+                {% for message in messages %}
+                    <div class="notice {{ message.tags }}" role="status">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <a class="logo" href="{% url 'home' %}">{{ site_name }}</a>
+                    <p style="max-width: 26em; margin-top: 12px;">
+                        მანქანების გაქირავება საქართველოს ქალაქებში — დაჯავშნე რამდენიმე წუთში.
+                    </p>
+                </div>
+                <div>
+                    <h3>ნავიგაცია</h3>
+                    <ul>
+                        <li><a href="{% url 'home' %}">მთავარი</a></li>
+                        <li><a href="{% url 'cars' %}">ყველა მანქანა</a></li>
+                        <li><a href="{% url 'filter' %}">მანქანების ძებნა</a></li>
+                        <li><a href="{% url 'add_car' %}">მანქანის გაქირავება</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>ანგარიში</h3>
+                    <ul>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'profile' %}">პროფილი</a></li>
+                            <li><a href="{% url 'profile' %}?tab=bookings">ჩემი ჯავშნები</a></li>
+                            <li><a href="{% url 'notifications' %}">შეტყობინებები</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">შესვლა</a></li>
+                            <li><a href="{% url 'register' %}">რეგისტრაცია</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">© {% now "Y" %} {{ site_name }} · საკურსო პროექტი</div>
+        </div>
+    </footer>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,95 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}გადახდა{% endblock %}
+
+{% block body %}
+<div class="container">
+    <p class="breadcrumb"><a href="{% url 'car_detail' car.id %}?start={{ start|date:'Y-m-d' }}&end={{ end|date:'Y-m-d' }}">← თარიღების შეცვლა</a></p>
+    <h1>გადახდა</h1>
+    <ol class="steps-bar" aria-label="ნაბიჯები">
+        <li class="done">01 · თარიღები ✓</li>
+        <li class="current" aria-current="step">02 · გადახდა</li>
+        <li>03 · დადასტურება</li>
+    </ol>
+
+    <div class="checkout">
+        <section class="panel">
+            <div class="cc" aria-hidden="true">
+                <div class="cc-top"><span class="cc-chip"></span><span class="cc-brand" id="cc-brand">CARD</span></div>
+                <div class="cc-number" id="cc-number">•••• •••• •••• ••••</div>
+                <div class="cc-bottom">
+                    <div><span>მფლობელი</span><b id="cc-name">სახელი გვარი</b></div>
+                    <div><span>ვადა</span><b id="cc-exp">MM/YY</b></div>
+                </div>
+            </div>
+
+            <div class="demo-note">
+                <strong>სადემონსტრაციო გადახდა</strong> — თანხა რეალურად არ ჩამოიჭრება.
+                ტესტ ბარათი: <code>4242 4242 4242 4242</code>, ნებისმიერი მომავალი ვადა და CVC.
+                უარყოფილი გადახდის სანახავად: <code>4000 0000 0000 0002</code>.
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="start_date" value="{{ start|date:'Y-m-d' }}">
+                <input type="hidden" name="end_date" value="{{ end|date:'Y-m-d' }}">
+                {% for error in form.non_field_errors %}<div class="notice error" role="alert">{{ error }}</div>{% endfor %}
+
+                {% include "portal/partials/form_field.html" with field=form.cardholder %}
+                {% include "portal/partials/form_field.html" with field=form.card_number %}
+                <div class="form-row">
+                    {% include "portal/partials/form_field.html" with field=form.expiry %}
+                    {% include "portal/partials/form_field.html" with field=form.cvc %}
+                </div>
+                <button type="submit" class="btn btn-block">გადახდა · {{ total }} ₾</button>
+                <p class="secure">🔒 ბარათის სრული ნომერი და CVC არ ინახება</p>
+            </form>
+        </section>
+
+        <aside class="panel summary" aria-label="ჯავშნის შეჯამება">
+            <div class="photo-wrap">{% include "portal/partials/photo.html" with photo=car.image1 alt=car.brand %}</div>
+            <p class="car-sub">{{ car.year }} · {{ car.get_transmission_display }} · {{ car.capacity }} ადგილი</p>
+            <h2 class="car-title">{{ car.brand }} {{ car.model }}</h2>
+            <div class="book-summary">
+                <div class="row"><span>ქალაქი</span><strong>{{ car.city }}</strong></div>
+                <div class="row"><span>აყვანა</span><strong>{{ start|date:"d.m.Y" }}</strong></div>
+                <div class="row"><span>დაბრუნება</span><strong>{{ end|date:"d.m.Y" }}</strong></div>
+                <div class="row"><span>{{ car.price }} ₾ × {{ days }} დღე</span><span>{{ total }} ₾</span></div>
+                <div class="row total"><span>გადასახდელი</span><span>{{ total }} ₾</span></div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Formats the card number as "4242 4242 ..." and mirrors the inputs on the card picture
+    const number = document.getElementById("id_card_number");
+    const name = document.getElementById("id_cardholder");
+    const exp = document.getElementById("id_expiry");
+    const brandOf = (n) => n.startsWith("4") ? "VISA" : /^(5[1-5]|2[2-7])/.test(n) ? "MASTERCARD" : /^3[47]/.test(n) ? "AMEX" : "CARD";
+
+    function show() {
+        const digits = number.value.replace(/\D/g, "").slice(0, 19);
+        const shown = (digits + "•".repeat(Math.max(0, 16 - digits.length))).replace(/(.{4})(?=.)/g, "$1 ");
+        document.getElementById("cc-number").textContent = shown;
+        document.getElementById("cc-brand").textContent = brandOf(digits);
+        document.getElementById("cc-name").textContent = name.value.trim() || "სახელი გვარი";
+        document.getElementById("cc-exp").textContent = exp.value || "MM/YY";
+    }
+    number.addEventListener("input", () => {
+        const digits = number.value.replace(/\D/g, "").slice(0, 19);
+        number.value = digits.replace(/(.{4})(?=.)/g, "$1 ");
+        show();
+    });
+    exp.addEventListener("input", (e) => {
+        let v = exp.value.replace(/\D/g, "").slice(0, 4);
+        if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+        exp.value = v;
+        show();
+    });
+    name.addEventListener("input", show);
+    show();
+</script>
+{% endblock %}

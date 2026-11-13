@@ -1,0 +1,54 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}ჯავშანი {{ rental.code }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <article class="ticket">
+        <header class="ticket-head">
+            <span class="eyebrow">ჯავშანი {{ rental.code }}</span>
+            <h1>{% if rental.status == "cancelled" %}ჯავშანი გაუქმებულია{% else %}ჯავშანი დადასტურებულია{% endif %}</h1>
+            <p style="margin: 0; opacity: .85;">{{ rental.created_at|date:"d.m.Y H:i" }}</p>
+            <span class="status status-{{ rental.state }} sticker" style="transform: rotate(4deg);">
+                {% if rental.state == "upcoming" %}მომავალი{% elif rental.state == "active" %}მიმდინარე{% elif rental.state == "finished" %}დასრულებული{% else %}გაუქმებული{% endif %}
+            </span>
+        </header>
+
+        <div class="ticket-body">
+            <div class="ticket-car">
+                <div class="photo-wrap">{% include "portal/partials/photo.html" with photo=rental.car.image1 alt=rental.car.brand %}</div>
+                <div>
+                    <p class="car-sub">{{ rental.car.year }} · {{ rental.city }}</p>
+                    <h2 class="car-title"><a href="{% url 'car_detail' rental.car.id %}">{{ rental.car.brand }} {{ rental.car.model }}</a></h2>
+                </div>
+            </div>
+            <div class="row"><span class="muted">მქირავებელი</span><strong>{{ rental.user.first_name }} {{ rental.user.last_name }} · {{ rental.user.phone }}</strong></div>
+            <div class="row"><span class="muted">მფლობელი</span><strong>{{ rental.car.owner.first_name }} · {{ rental.car.owner.phone }}</strong></div>
+            <div class="row"><span class="muted">აყვანა</span><strong>{{ rental.start_date|date:"d.m.Y" }}</strong></div>
+            <div class="row"><span class="muted">დაბრუნება</span><strong>{{ rental.end_date|date:"d.m.Y" }}</strong></div>
+            <div class="row"><span class="muted">ხანგრძლივობა</span><strong>{{ rental.days }} დღე</strong></div>
+            {% if rental.payment %}
+                <div class="row"><span class="muted">ბარათი</span><strong class="mono">{{ rental.payment.card_brand }} •••• {{ rental.payment.card_last4 }}</strong></div>
+                <div class="row"><span class="muted">გადახდის სტატუსი</span><strong>{{ rental.payment.get_status_display }}</strong></div>
+            {% endif %}
+            <div class="row total"><span>{% if rental.status == "cancelled" %}დაბრუნებული თანხა{% else %}გადახდილი{% endif %}</span><span>{{ rental.price_paid }} ₾</span></div>
+        </div>
+
+        <div class="ticket-actions">
+            {% if rental.user == user %}
+                <a class="btn" href="{% url 'profile' %}?tab=bookings">ჩემი ჯავშნები</a>
+            {% else %}
+                <a class="btn" href="{% url 'profile' %}?tab=incoming">ჩემი მანქანების ჯავშნები</a>
+            {% endif %}
+            <button type="button" class="btn btn-light" onclick="window.print()">ქვითრის ბეჭდვა</button>
+            {% if rental.user == user and rental.can_cancel %}
+                <form method="post" action="{% url 'cancel_booking' rental.id %}"
+                      onsubmit="return confirm('ნამდვილად გსურთ ჯავშნის გაუქმება? თანხა დაგიბრუნდებათ.')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">ჯავშნის გაუქმება</button>
+                </form>
+            {% endif %}
+        </div>
+    </article>
+</div>
+{% endblock %}

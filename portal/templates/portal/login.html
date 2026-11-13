@@ -1,0 +1,26 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}ავტორიზაცია{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="auth-wrap">
+        {% include "portal/partials/auth_art.html" with sticker="კეთილი იყოს შენი დაბრუნება" line1="გზა გელოდება" line2="შედი ანგარიშზე" %}
+        <div class="auth-form">
+            <span class="eyebrow">ავტორიზაცია</span>
+            <h1>შესვლა</h1>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for error in form.non_field_errors %}
+                    <div class="notice error" role="alert">{{ error }}</div>
+                {% endfor %}
+                {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+                {% include "portal/partials/form_field.html" with field=form.phone %}
+                {% include "portal/partials/form_field.html" with field=form.password %}
+                <button type="submit" class="btn btn-block">შესვლა</button>
+            </form>
+            <p class="auth-alt">არ გაქვთ ანგარიში? <a href="{% url 'register' %}">რეგისტრაცია</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

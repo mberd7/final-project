@@ -1,0 +1,27 @@
+{# Page numbers: ‹ 1 2 … 7 › — keeps the other URL parameters (filters, sort, tab) #}
+{% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="გვერდები">
+        {% if page_obj.has_previous %}
+            <a class="page-btn" href="{% querystring page=page_obj.previous_page_number %}" aria-label="წინა გვერდი">‹</a>
+        {% else %}
+            <span class="page-btn" aria-hidden="true">‹</span>
+        {% endif %}
+
+        {% for n in page_obj.numbers %}
+            {% if n == page_obj.ellipsis %}
+                <span class="page-gap">…</span>
+            {% elif n == page_obj.number %}
+                <span class="page-btn current" aria-current="page">{{ n }}</span>
+            {% else %}
+                <a class="page-btn" href="{% querystring page=n %}" aria-label="გვერდი {{ n }}">{{ n }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a class="page-btn" href="{% querystring page=page_obj.next_page_number %}" aria-label="შემდეგი გვერდი">›</a>
+        {% else %}
+            <span class="page-btn" aria-hidden="true">›</span>
+        {% endif %}
+    </nav>
+    <p class="page-info">ნაჩვენებია {{ page_obj.start_index }}–{{ page_obj.end_index }}, სულ {{ page_obj.paginator.count }}</p>
+{% endif %}

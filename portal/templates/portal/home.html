@@ -1,0 +1,109 @@
+{% extends "portal/layout.html" %}
+{% load static %}
+
+{% block title %}მთავარი{% endblock %}
+
+{% block body %}
+<section class="hero grid-paper">
+    <div class="container">
+        <div class="hero-inner">
+            <div>
+                <span class="sticker">მანქანების გაქირავება · საქართველო</span>
+                <h1 class="display"><span class="hl">იქირავე მანქანა</span><br>მარტივად,<br>ნებისმიერ ქალაქში</h1>
+                <p class="hero-lead">აირჩიე მანქანა, მონიშნე თარიღები კალენდარში და გადაიხადე ონლაინ. ან გააქირავე შენი მანქანა და მიიღე შემოსავალი.</p>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <span class="sticker light s1">თავისუფალი თარიღები — ონლაინ</span>
+                <img src="{% static 'portal/img/hero-illustration.webp' %}" alt="" width="1080" height="1080">
+                <span class="sticker dark tilt-right s2">{{ car_count }} მანქანა საიტზე</span>
+            </div>
+        </div>
+
+        <form class="search-card" method="get" action="{% url 'filter' %}" aria-label="სწრაფი ძებნა">
+            <div class="field">
+                <label for="h-city">ქალაქი</label>
+                <select id="h-city" name="city">
+                    <option value="">ნებისმიერი</option>
+                    {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="h-start">აყვანა</label>
+                <input type="text" class="date-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="დდ.თთ.წწ" data-min="{{ today|date:'Y-m-d' }}" id="h-start" name="start_date">
+            </div>
+            <div class="field">
+                <label for="h-end">დაბრუნება</label>
+                <input type="text" class="date-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="დდ.თთ.წწ" data-min="{{ today|date:'Y-m-d' }}" id="h-end" name="end_date">
+            </div>
+            <button type="submit" class="btn">თავისუფალი მანქანების ძებნა</button>
+        </form>
+    </div>
+</section>
+
+<div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+        {% for _ in "12" %}
+            <span>აირჩიე მანქანა</span><span>მონიშნე თარიღები</span><span>გადაიხადე ონლაინ</span><span>გაემგზავრე</span>
+            <span>აირჩიე მანქანა</span><span>მონიშნე თარიღები</span><span>გადაიხადე ონლაინ</span><span>გაემგზავრე</span>
+        {% endfor %}
+    </div>
+</div>
+
+<section class="section grid-paper blue" style="border-block: var(--border);">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">ყველაზე მოთხოვნადი</span>
+                <h2>პოპულარული მანქანები</h2>
+            </div>
+            <a class="btn btn-light" href="{% url 'cars' %}?sort=popular">ყველა პოპულარული</a>
+        </div>
+        <div class="grid">
+            {% for car in popular %}
+                {% include "portal/partials/car_card.html" %}
+            {% empty %}
+                <div class="empty-state"><p>ჯერ არცერთი მანქანა არ დაჯავშნილა.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <span class="eyebrow">ახალი განცხადებები</span>
+                <h2>ახლახან დამატებული</h2>
+            </div>
+            <a class="btn btn-light" href="{% url 'cars' %}">ყველა მანქანა →</a>
+        </div>
+        <div class="grid">
+            {% for car in other_cars %}
+                {% include "portal/partials/car_card.html" %}
+            {% empty %}
+                <div class="empty-state"><p>მანქანები ჯერ არ არის დამატებული.</p></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section-tight" style="padding-bottom: 72px;">
+    <div class="container">
+        <div class="cta grid-paper">
+            <span class="sticker dark">ახალი!</span>
+            <div>
+                <span class="eyebrow">მფლობელებისთვის</span>
+                <h2>გააქირავე შენი მანქანა</h2>
+                <p class="muted">დაამატე განცხადება 3 ფოტოთი. როცა ვინმე დაჯავშნის, მიიღებ შეტყობინებას.</p>
+            </div>
+            <div style="justify-self: end;">
+                <a class="btn" href="{% url 'add_car' %}">განცხადების დამატება</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'portal/js/datepicker.js' %}"></script>
+{% endblock %}

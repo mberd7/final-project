@@ -1,0 +1,27 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}რეგისტრაცია{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="auth-wrap">
+        {% include "portal/partials/auth_art.html" with sticker="რეგისტრაცია ერთ წუთში" line1="შემოგვიერთდი" line2="და დაჯავშნე" %}
+        <div class="auth-form">
+            <span class="eyebrow">ახალი ანგარიში</span>
+            <h1>რეგისტრაცია</h1>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="form-row">
+                    {% include "portal/partials/form_field.html" with field=form.first_name %}
+                    {% include "portal/partials/form_field.html" with field=form.last_name %}
+                </div>
+                {% include "portal/partials/form_field.html" with field=form.phone %}
+                {% include "portal/partials/form_field.html" with field=form.email %}
+                {% include "portal/partials/form_field.html" with field=form.password %}
+                <button type="submit" class="btn btn-block">რეგისტრაცია</button>
+            </form>
+            <p class="auth-alt">უკვე დარეგისტრირებული ხართ? <a href="{% url 'login' %}">შესვლა</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

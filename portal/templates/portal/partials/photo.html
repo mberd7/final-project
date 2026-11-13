@@ -1,0 +1,7 @@
+{# გამოყენება: {% include "portal/partials/photo.html" with photo=car.image1 alt="ტექსტი" %} #}
+{% if photo %}
+    <img class="photo" src="{{ photo.url }}" alt="{{ alt }}" loading="lazy"
+         onerror="this.replaceWith(Object.assign(document.createElement('div'), {className: 'photo-empty', textContent: 'ფოტო არ არის'}))">
+{% else %}
+    <div class="photo-empty">ფოტო არ არის</div>
+{% endif %}

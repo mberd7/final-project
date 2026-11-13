@@ -1,0 +1,26 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}შეტყობინებები{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="page-head" style="border: 0; padding-bottom: 20px;">
+        <span class="eyebrow">შეტყობინებები</span>
+        <h1>რა ხდება შენს მანქანებთან</h1>
+    </div>
+
+    <ul class="note-list">
+        {% for n in notifications %}
+            <li class="note{% if not n.is_read %} unread{% endif %}">
+                <span class="note-dot" aria-hidden="true"></span>
+                <div>
+                    <p>{% if not n.is_read %}<span class="sr-only">ახალი: </span>{% endif %}{{ n.message }}</p>
+                    <small>{{ n.created_at|date:"d.m.Y H:i" }}{% if n.rental %} · <a href="{% url 'booking_detail' n.rental.id %}">ჯავშნის ნახვა</a>{% endif %}</small>
+                </div>
+            </li>
+        {% empty %}
+            <li class="empty-state">შეტყობინებები არ გაქვთ. აქ გამოჩნდება, როცა ვინმე შენს მანქანას დაჯავშნის.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

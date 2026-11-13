@@ -1,0 +1,119 @@
+{% extends "portal/layout.html" %}
+{% load static %}
+
+{% block title %}{{ car.brand }} {{ car.model }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    <p class="breadcrumb"><a href="{% url 'home' %}">მთავარი</a> / <a href="{% url 'filter' %}">მანქანები</a> / {{ car.brand }} {{ car.model }}</p>
+
+    <div class="car-layout">
+        <div>
+            <div class="gallery-main photo-wrap" id="main-photo">
+                {% include "portal/partials/photo.html" with photo=car.image1 alt=car.brand %}
+            </div>
+            <div class="thumbs">
+                {% for photo in car.photos %}
+                    <button type="button" class="thumb photo-wrap" data-src="{{ photo.url }}"
+                            aria-label="ფოტო {{ forloop.counter }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+                        <img class="photo" src="{{ photo.url }}" alt="" loading="lazy">
+                    </button>
+                {% endfor %}
+            </div>
+
+            <div class="car-heading">
+                <span class="sticker">{{ car.city }}</span>
+                <h1>{{ car.brand }} {{ car.model }}</h1>
+            </div>
+
+            <div class="specs">
+                <div class="spec"><span>გამოშვების წელი</span><strong>{{ car.year }}</strong></div>
+                <div class="spec"><span>ტრანსმისია</span><strong>{{ car.get_transmission_display }}</strong></div>
+                <div class="spec"><span>ტევადობა</span><strong>{{ car.capacity }} ადგილი</strong></div>
+                <div class="spec"><span>ბაკის მოცულობა</span><strong>{{ car.fuel_capacity }} ლ</strong></div>
+                <div class="spec"><span>ქალაქი</span><strong>{{ car.city }}</strong></div>
+                <div class="spec"><span>ფასი</span><strong>{{ car.price }} ₾ / დღე</strong></div>
+            </div>
+
+            <div class="owner">
+                <span class="avatar" aria-hidden="true">{{ car.owner.first_name|first }}</span>
+                <div>
+                    <strong>{{ car.owner.first_name }} {{ car.owner.last_name }}</strong><br>
+                    <span class="mono muted" style="font-size: .85rem;">{{ car.owner.phone }}</span>
+                </div>
+            </div>
+
+            {% if car.has_location %}
+                <h2 style="margin-top: 32px;">მდებარეობა</h2>
+                <iframe class="map" title="მანქანის მდებარეობა რუკაზე" loading="lazy" src="{{ car.map_embed_url }}"></iframe>
+            {% endif %}
+        </div>
+
+        <aside class="book-panel" aria-label="დაჯავშნა">
+            <p class="price">{{ car.price }} ₾ <small>/ დღე</small></p>
+
+            {% if not user.is_authenticated %}
+                <p class="muted">თავისუფალი თარიღების სანახავად და დასაჯავშნად გაიარეთ ავტორიზაცია.</p>
+                <a class="btn btn-block" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ავტორიზაცია</a>
+                <p class="auth-alt">არ გაქვთ ანგარიში? <a href="{% url 'register' %}">რეგისტრაცია</a></p>
+            {% elif is_owner %}
+                <div class="notice info">ეს თქვენი განცხადებაა.</div>
+                <a class="btn btn-light btn-block" href="{% url 'profile' %}?tab=incoming" style="margin-bottom: 10px;">ამ მანქანის ჯავშნები</a>
+                <form method="post" action="{% url 'delete_car' car.id %}"
+                      onsubmit="return confirm('ნამდვილად გსურთ განცხადების წაშლა?')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-block">განცხადების წაშლა</button>
+                </form>
+            {% else %}
+                <form method="get" action="{% url 'checkout' car.id %}" id="booking-form">
+                    <div id="date-fallback" class="form-row">
+                        <div class="field">
+                            <label for="id_start_date">აყვანა</label>
+                            <input type="date" id="id_start_date" name="start_date" min="{{ today|date:'Y-m-d' }}" value="{{ preselect_start }}">
+                        </div>
+                        <div class="field">
+                            <label for="id_end_date">დაბრუნება</label>
+                            <input type="date" id="id_end_date" name="end_date" min="{{ today|date:'Y-m-d' }}" value="{{ preselect_end }}">
+                        </div>
+                    </div>
+
+                    <div id="calendar" class="cal" hidden
+                         data-price="{{ car.price }}" data-today="{{ today|date:'Y-m-d' }}" data-max-days="{{ max_days }}"></div>
+                    <p class="cal-msg" id="cal-msg" role="status" aria-live="polite"></p>
+
+                    <div class="book-summary">
+                        <div class="row"><span>თარიღები</span><strong id="sum-dates">—</strong></div>
+                        <div class="row"><span id="sum-calc">{{ car.price }} ₾ × 0 დღე</span><span id="sum-sub">0 ₾</span></div>
+                        <div class="row total"><span>ჯამი</span><span id="sum-total">0 ₾</span></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-block" id="book-btn" style="margin-top: 16px;">გადახდაზე გადასვლა</button>
+                </form>
+
+                <form method="post" action="{% url 'favorite' car.id %}" style="margin-top: 10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="btn btn-light btn-block btn-plain">
+                        {% if is_favorite %}♥ მოწონებულია{% else %}♡ მოწონება{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </aside>
+    </div>
+</div>
+{{ booked|json_script:"booked-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'portal/js/calendar.js' %}"></script>
+<script>
+    // Clicking a small photo shows it as the big photo
+    document.querySelectorAll(".thumb").forEach((thumb) => {
+        thumb.addEventListener("click", () => {
+            const main = document.querySelector("#main-photo .photo");
+            if (main) main.src = thumb.dataset.src;
+            document.querySelectorAll(".thumb").forEach((t) => t.setAttribute("aria-pressed", t === thumb));
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}ყველა მანქანა{% endblock %}
+
+{% block body %}
+<section class="page-head grid-paper">
+    <div class="container">
+        <span class="eyebrow">კატალოგი</span>
+        <div class="section-head" style="margin: 0;">
+            <div>
+                <h1>ყველა მანქანა</h1>
+                <p class="muted" style="margin: 0;">საიტზე {{ page_obj.paginator.count }} მანქანაა. გჭირდება კონკრეტული თარიღი ან ქალაქი? <a href="{% url 'filter' %}">გამოიყენე ძებნა</a>.</p>
+            </div>
+            <form method="get" class="sort-form">
+                <label for="sort">დალაგება</label>
+                <select id="sort" name="sort" onchange="this.form.submit()">
+                    {% for key, label in sorts %}
+                        <option value="{{ key }}" {% if key == sort %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <noscript><button type="submit" class="btn btn-small">OK</button></noscript>
+            </form>
+        </div>
+    </div>
+</section>
+
+<section class="section-tight" style="padding-bottom: 72px;">
+    <div class="container">
+        <div class="grid">
+            {% for car in page_obj %}
+                {% include "portal/partials/car_card.html" %}
+            {% empty %}
+                <div class="empty-state"><p>მანქანები ჯერ არ არის დამატებული.</p></div>
+            {% endfor %}
+        </div>
+        {% include "portal/partials/pagination.html" %}
+    </div>
+</section>
+{% endblock %}

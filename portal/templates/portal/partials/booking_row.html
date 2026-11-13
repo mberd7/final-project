@@ -1,0 +1,19 @@
+{# One booking as a horizontal card. `show_renter` = owner's view of bookings on their cars #}
+<article class="booking">
+    <a href="{% url 'car_detail' rental.car.id %}" class="photo-wrap" tabindex="-1">{% include "portal/partials/photo.html" with photo=rental.car.image1 alt=rental.car.brand %}</a>
+    <div>
+        <h3><a href="{% url 'booking_detail' rental.id %}" style="color: inherit; text-decoration: none;">{{ rental.car.brand }} {{ rental.car.model }}</a></h3>
+        <div class="booking-dates">
+            <span>{{ rental.start_date|date:"d.m.Y" }} → {{ rental.end_date|date:"d.m.Y" }}</span>
+            <span>{{ rental.days }} დღე</span>
+            <span>{{ rental.city }}</span>
+            {% if show_renter %}<span>მქირავებელი: {{ rental.user.first_name }} {{ rental.user.last_name }} · {{ rental.user.phone }}</span>{% endif %}
+            <span>{{ rental.code }}</span>
+        </div>
+    </div>
+    <div class="booking-side">
+        <span class="status status-{{ rental.state }}">{% if rental.state == "upcoming" %}მომავალი{% elif rental.state == "active" %}მიმდინარე{% elif rental.state == "finished" %}დასრულებული{% else %}გაუქმებული{% endif %}</span>
+        <span class="price">{{ rental.price_paid }} ₾</span>
+        <a class="btn btn-small btn-light" href="{% url 'booking_detail' rental.id %}">დეტალები</a>
+    </div>
+</article>

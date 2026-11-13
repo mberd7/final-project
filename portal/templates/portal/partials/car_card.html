@@ -1,0 +1,16 @@
+<a href="{% url 'car_detail' car.id %}{{ date_query }}" class="car-card">
+    <div class="photo-wrap">{% include "portal/partials/photo.html" with photo=car.image1 alt=car.brand %}</div>
+    <div class="car-body">
+        <p class="car-sub">{{ car.year }} · {{ car.city }}</p>
+        <h3 class="car-title">{{ car.brand }} {{ car.model }}</h3>
+        <div class="chips">
+            <span class="chip">{{ car.capacity }} ადგილი</span>
+            <span class="chip">{{ car.get_transmission_display }}</span>
+            <span class="chip">{{ car.fuel_capacity }} ლ</span>
+        </div>
+        <div class="car-foot">
+            <span class="price">{{ car.price }} ₾ <small>/ დღე</small></span>
+            <span class="arrow" aria-hidden="true">→</span>
+        </div>
+    </div>
+</a>

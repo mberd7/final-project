@@ -1,0 +1,89 @@
+{% extends "portal/layout.html" %}
+{% load static %}
+
+{% block title %}მანქანების ძებნა{% endblock %}
+
+{% block body %}
+<section class="page-head grid-paper">
+    <div class="container">
+        <span class="eyebrow">ძებნა</span>
+        <h1>იპოვე შენი მანქანა</h1>
+        <p class="muted" style="margin: 0;">გამოიყენე ფილტრები ცალ-ცალკე ან ერთად. თარიღების მითითებისას ჩანს მხოლოდ თავისუფალი მანქანები.</p>
+
+        <form method="get" class="filter-form" novalidate>
+            <div class="field">
+                <label for="city">ქალაქი</label>
+                <select id="city" name="city">
+                    <option value="">ნებისმიერი</option>
+                    {% for c in cities %}
+                        <option value="{{ c }}" {% if values.city == c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="start_year">წელი (დან)</label>
+                <select id="start_year" name="start_year">
+                    <option value="">ნებისმიერი</option>
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if values.start_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="end_year">წელი (მდე)</label>
+                <select id="end_year" name="end_year">
+                    <option value="">ნებისმიერი</option>
+                    {% for y in years %}
+                        <option value="{{ y }}" {% if values.end_year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="capacity">ტევადობა</label>
+                <select id="capacity" name="capacity">
+                    <option value="">ნებისმიერი</option>
+                    {% for n in capacities %}
+                        <option value="{{ n }}" {% if values.capacity == n|stringformat:"s" %}selected{% endif %}>{{ n }} ადგილიანი</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label for="start_date">აყვანა</label>
+                <input type="text" class="date-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="დდ.თთ.წწ" data-min="{{ today|date:'Y-m-d' }}" id="start_date" name="start_date" value="{{ values.start_date }}">
+            </div>
+            <div class="field">
+                <label for="end_date">დაბრუნება</label>
+                <input type="text" class="date-input" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="დდ.თთ.წწ" data-min="{{ today|date:'Y-m-d' }}" id="end_date" name="end_date" value="{{ values.end_date }}">
+            </div>
+            <button type="submit" class="btn">ძებნა</button>
+        </form>
+    </div>
+</section>
+
+<section class="section-tight" style="padding-bottom: 72px;">
+    <div class="container">
+        {% for error in form.non_field_errors %}<div class="notice error" role="alert">{{ error }}</div>{% endfor %}
+        {% for field in form %}{% for error in field.errors %}<div class="notice error" role="alert">{{ field.label }}: {{ error }}</div>{% endfor %}{% endfor %}
+        {% if searched %}
+            <div class="results-bar">
+                <p style="margin: 0;"><strong>{{ page_obj.paginator.count }}</strong> მანქანა ნაპოვნია{% if form.is_valid and form.cleaned_data.start_date %} · თავისუფალია {{ form.cleaned_data.start_date|date:"d.m" }} – {{ form.cleaned_data.end_date|date:"d.m" }}{% endif %}</p>
+                <a class="btn btn-light btn-small" href="{% url 'filter' %}">ფილტრის გასუფთავება</a>
+            </div>
+            <div class="grid">
+                {% for car in page_obj %}
+                    {% include "portal/partials/car_card.html" %}
+                {% empty %}
+                    <div class="empty-state"><p>ამ პარამეტრებით მანქანა ვერ მოიძებნა. სცადეთ სხვა თარიღები ან ნაკლები ფილტრი.</p></div>
+                {% endfor %}
+            </div>
+            {% include "portal/partials/pagination.html" %}
+        {% else %}
+            <div class="empty-state"><p>აირჩიეთ ერთი ან რამდენიმე ფილტრი და დააჭირეთ „ძებნას“.</p></div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'portal/js/datepicker.js' %}"></script>
+{% endblock %}

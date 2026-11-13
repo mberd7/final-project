@@ -1,0 +1,99 @@
+{% extends "portal/layout.html" %}
+
+{% block title %}მანქანის დამატება{% endblock %}
+
+{% block body %}
+<section class="page-head grid-paper" style="margin-bottom: 28px;">
+    <div class="container">
+        <span class="eyebrow">ახალი განცხადება</span>
+        <h1>გააქირავე შენი მანქანა</h1>
+        <p class="muted" style="margin: 0;">შეავსე ინფორმაცია, ატვირთე 3 ფოტო და განცხადება მაშინვე გამოჩნდება საიტზე.</p>
+    </div>
+</section>
+
+<div class="container">
+    <div class="form-card">
+        <p class="owner-note">☎ განცხადება დაემატება თქვენი ნომრით: <strong>{{ user.phone }}</strong></p>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% for error in form.non_field_errors %}<div class="notice error">{{ error }}</div>{% endfor %}
+
+            <div class="form-section">
+                <h2><span class="num">1</span>მანქანა</h2>
+                <div class="form-grid">
+                    {% include "portal/partials/form_field.html" with field=form.brand %}
+                    {% include "portal/partials/form_field.html" with field=form.model %}
+                    {% include "portal/partials/form_field.html" with field=form.year %}
+                    {% include "portal/partials/form_field.html" with field=form.transmission %}
+                    {% include "portal/partials/form_field.html" with field=form.capacity %}
+                    {% include "portal/partials/form_field.html" with field=form.fuel_capacity %}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2><span class="num">2</span>ფასი და ქალაქი</h2>
+                <div class="form-grid">
+                    {% include "portal/partials/form_field.html" with field=form.price %}
+                    {% include "portal/partials/form_field.html" with field=form.city %}
+                </div>
+                <p class="hint" id="gps-status">📍 მდებარეობა განისაზღვრება ავტომატურად (თუ მოწყობილობას აქვს GPS).</p>
+            </div>
+
+            <div class="form-section">
+                <h2><span class="num">3</span>ფოტოები</h2>
+                <p class="hint" style="margin: -6px 0 14px;">PNG, JPG, JPEG ან WEBP · მაქსიმუმ 5 MB თითო</p>
+                <div class="form-grid three">
+                    {% for field in form %}{% if field.name == "image1" or field.name == "image2" or field.name == "image3" %}
+                        <div class="field{% if field.errors %} has-error{% endif %}">
+                            <label class="upload" for="{{ field.id_for_label }}">
+                                <span class="upload-label"><strong>+</strong>{{ field.label }}</span>
+                                {{ field }}
+                            </label>
+                            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}{% endfor %}
+                </div>
+            </div>
+
+            {{ form.latitude }}{{ form.longitude }}
+            <button type="submit" class="btn">განცხადების დამატება</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Show a preview of each chosen photo inside its box
+    document.querySelectorAll(".upload input[type=file]").forEach((input) => {
+        input.addEventListener("change", () => {
+            const box = input.closest(".upload");
+            box.querySelector("img")?.remove();
+            const file = input.files[0];
+            if (!file || !file.type.startsWith("image/")) return;
+            const img = document.createElement("img");
+            img.alt = "";
+            img.src = URL.createObjectURL(file);
+            box.prepend(img);
+        });
+    });
+
+    // Coordinates are filled in automatically from the device (e.g. a phone's GPS).
+    // If the user refuses or the device has no GPS, the car is saved without a map.
+    const status = document.getElementById("gps-status");
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                document.getElementById("{{ form.latitude.id_for_label }}").value = pos.coords.latitude.toFixed(6);
+                document.getElementById("{{ form.longitude.id_for_label }}").value = pos.coords.longitude.toFixed(6);
+                status.textContent = "📍 მდებარეობა განისაზღვრა ✓";
+            },
+            () => { status.textContent = "📍 მდებარეობა ვერ განისაზღვრა — განცხადება დაემატება რუკის გარეშე."; },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    } else {
+        status.textContent = "📍 ბრაუზერს არ აქვს GPS-ის მხარდაჭერა — განცხადება დაემატება რუკის გარეშე.";
+    }
+</script>
+{% endblock %}
