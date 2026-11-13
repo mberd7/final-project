@@ -291,7 +291,7 @@ class Favorite(models.Model):
 
 
 class Notification(models.Model):
-    """შეტყობინება მომხმარებლისთვის (🔔 ღილაკი მენიუში).
+    """შეტყობინება მომხმარებლისთვის.
     მაგ.: "გიორგიმ დაჯავშნა თქვენი Toyota Prius" — იგზავნება მანქანის მფლობელთან."""
 
     user = models.ForeignKey(
@@ -300,7 +300,7 @@ class Notification(models.Model):
     # რომელ ჯავშანს ეხება (არასავალდებულო: null=True)
     rental = models.ForeignKey(Rental, on_delete=models.CASCADE, null=True, blank=True)
     message = models.CharField("შეტყობინება", max_length=255)
-    is_read = models.BooleanField("წაკითხულია", default=False)  # წაუკითხავები ჩანს 🔔-ზე რიცხვად
+    is_read = models.BooleanField("წაკითხულია", default=False)  
     created_at = models.DateTimeField("დრო", auto_now_add=True)
 
     class Meta:
